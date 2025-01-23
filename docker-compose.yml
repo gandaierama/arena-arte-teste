@@ -1,0 +1,49 @@
+version: '3'
+services:
+  front:
+    container_name: front
+    build: ./front
+    ports:
+      - 3000:3000
+    networks:
+      - new
+  database:
+    image: mysql:5.7
+    container_name: database
+    restart: unless-stopped
+    tty: true
+    build:
+          context: ./database
+          args:
+              - MYSQL_DATABASE=${MYSQL_DATABASE}
+              - MYSQL_USER=${MYSQL_USER}
+              - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+              - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    ports:
+      - ${MYSQL_PORT}:3306
+    command: --innodb-use-native-aio=0
+    volumes:
+          - "./database/db/:/var/lib/mysql"
+    networks:
+      - new
+  nginx:
+    container_name: nginx
+    build:
+          context: ./nginx
+          args:
+              - DOMAINS=${DOMAINS}
+              - CERTBOT_TEST_CERT=${CERTBOT_TEST_CERT}
+              - CERTBOT_EMAILS=${CERTBOT_EMAILS}
+              - CERTBOT_RSA_KEY_SIZE=${CERTBOT_RSA_KEY_SIZE}
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - new
+
+networks:
+  new:
+
+
+
